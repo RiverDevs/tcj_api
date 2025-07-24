@@ -1,0 +1,22 @@
+# docker-compose.yml
+# Puedes eliminar la línea "version: 'X.X'"
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      MONGO_URI: mongodb://mongo:27017/tcj-api-db
+      JWT_SECRET: supersecretkeyforencryption_changethis_inproduction
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo:latest # O la versión específica que estés usando, por ejemplo, mongo:8.0.10
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

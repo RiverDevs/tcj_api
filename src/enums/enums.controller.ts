@@ -1,0 +1,34 @@
+import { Controller, Get } from '@nestjs/common';
+import { CategoryEnum } from '../common/enums/category.enum';
+import { SubCategoryEnum } from '../common/enums/subcategory.enum';
+import { RondaEnum } from '../common/enums/ronda.enum';
+import { GrupoEnum } from '../common/enums/grupo.enum';
+import { CantidadEnum } from 'src/common/enums/cantidad.enum';
+
+@Controller('enums')
+export class EnumsController {
+  @Get('categorias')
+  getCategorias() {
+    return Object.values(CategoryEnum);
+  }
+
+  @Get('subcategorias')
+  getSubcategorias() {
+    return Object.values(SubCategoryEnum);
+  }
+
+  @Get('rondas')
+  getRondas() {
+    return Object.values(RondaEnum);
+  }
+
+  @Get('grupos')
+  getGrupos() {
+    return Object.values(GrupoEnum);
+  }
+
+  @Get('cantidad')
+  getCantidad() {
+    return Object.values(CantidadEnum);
+  }
+}
