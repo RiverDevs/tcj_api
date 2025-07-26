@@ -8,7 +8,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   app.enableCors({
-    origin: ['http://127.0.0.1:5500', 'https://tu-dominio-hostinger.com'], // ¡Importante! Aquí debes reemplazar 'http://127.0.0.1:5500' con el *dominio real* de tu frontend en Hostinger. Puedes poner múltiples orígenes en un array.
+    origin: ['http://127.0.0.1:5500', 'https://tcj.riverdevs.com'], // ¡Importante! Aquí debes reemplazar 'http://127.0.0.1:5500' con el *dominio real* de tu frontend en Hostinger. Puedes poner múltiples orígenes en un array.
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
