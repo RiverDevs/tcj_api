@@ -14,6 +14,7 @@ import { CreateUserDto } from './dto/create-user.dto'; // Asegúrate de que este
 import { LoginDto } from './dto/login.dto'; // Asegúrate de que este DTO esté creado
 import { Judge, JudgeDocument } from '../judges/schemas/judge.schema';
 import { Competitor, CompetitorDocument } from '../competitors/schemas/competitor.schema';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -108,5 +109,25 @@ async register(createUserDto: CreateUserDto): Promise<{ accessToken: string; use
     return this.userModel.find({ role: UserRole.JUDGE })
                          .select('username firstName lastName') // Selecciona solo los campos necesarios
                          .exec();
+  }
+
+  async changePassword(userId: string, currentPassword, newPassword): Promise<{ message: string }> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado.'); // Esto no debería pasar si el JWT es válido
+    }
+
+    // Verificar la contraseña actual
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('La contraseña actual es incorrecta.');
+    }
+
+    // Hashear y guardar la nueva contraseña
+    const hashedPassword = await bcrypt.hash(newPassword, 10); // O tu saltRounds
+    user.password = hashedPassword;
+    await user.save();
+
+    return { message: 'Contraseña actualizada exitosamente.' };
   }
 }
