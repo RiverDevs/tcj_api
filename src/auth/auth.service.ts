@@ -7,13 +7,13 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose'; // Importar Types
 import { User, UserDocument, UserRole } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
-import { UpdateUserDto } from './dto/update-user.dto'; // Importar el nuevo DTO
-import { Judge, JudgeDocument } from '../judges/schemas/judge.schema'; // Asegúrate de que esta ruta sea correcta
-import { Competitor, CompetitorDocument } from '../competitors/schemas/competitor.schema'; // Asegúrate de que esta ruta sea correcta
+import { UpdateUserDto } from './dto/update-user.dto';
+import { Judge, JudgeDocument } from '../judges/schemas/judge.schema';
+import { Competitor, CompetitorDocument } from '../competitors/schemas/competitor.schema';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -25,44 +25,38 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(createUserDto: CreateUserDto): Promise<{ accessToken?: string; user: any }> { // accessToken es opcional en el retorno
+  async register(createUserDto: CreateUserDto): Promise<{ accessToken?: string; user: any }> {
     const { username, password, role, firstName, lastName, email, category } = createUserDto;
 
     const existingUser = await this.userModel.findOne({ username });
     if (existingUser) throw new ConflictException('El usuario ya existe');
 
-    let entityRef = null;
+    // Refactorización para manejar entityRef de forma más limpia
+    const newUserObj: any = {
+        username,
+        password,
+        role,
+        firstName,
+        lastName,
+        email,
+    };
+
     if (role === UserRole.JUDGE) {
-      // Verificar si ya existe un juez con el mismo email, por ejemplo
-      const existingJudge = await this.judgeModel.findOne({ email });
-      if (existingJudge) throw new ConflictException('Ya existe un juez con este email.');
-      entityRef = await this.judgeModel.create({ firstName, lastName, email });
+        // Verificar si ya existe un juez con el mismo email, por ejemplo
+        const existingJudge = await this.judgeModel.findOne({ email });
+        if (existingJudge) throw new ConflictException('Ya existe un juez con este email.');
+        const createdJudge = await this.judgeModel.create({ firstName, lastName, email });
+        newUserObj.judgeRef = createdJudge._id;
     } else if (role === UserRole.COMPETITOR) {
-      // Verificar si ya existe un competidor con el mismo email/nombre, etc.
-      const existingCompetitor = await this.competitorModel.findOne({ email });
-      if (existingCompetitor) throw new ConflictException('Ya existe un competidor con este email.');
-      entityRef = await this.competitorModel.create({ firstName, lastName, email, category });
+        // Verificar si ya existe un competidor con el mismo email/nombre, etc.
+        const existingCompetitor = await this.competitorModel.findOne({ email });
+        if (existingCompetitor) throw new ConflictException('Ya existe un competidor con este email.');
+        const createdCompetitor = await this.competitorModel.create({ firstName, lastName, email, category });
+        newUserObj.competitorRef = createdCompetitor._id;
+        newUserObj.category = category; // Asegúrate de asignar la categoría también al usuario
     }
 
-    // El middleware 'pre save' en user.schema.ts se encargará de hashear la contraseña
-    const newUser = await this.userModel.create({
-      username,
-      password,
-      role,
-      firstName,
-      lastName,
-      email,
-      category,
-      judgeRef: role === UserRole.JUDGE ? entityRef._id : undefined,
-      competitorRef: role === UserRole.COMPETITOR ? entityRef._id : undefined,
-    });
-
-    // Si el registro es desde el panel de admin, no siempre necesitamos devolver un token
-    // solo si se registra a uno mismo. Para un CRUD, no se devuelve.
-    // Aquí puedes decidir si quieres que el registro de un nuevo usuario por un ADMIN
-    // devuelva un token. Por simplicidad para el CRUD, no lo haremos.
-    // const payload = { sub: newUser._id, role: newUser.role };
-    // const accessToken = this.jwtService.sign(payload);
+    const newUser = await this.userModel.create(newUserObj);
 
     return {
       user: {
@@ -101,23 +95,18 @@ export class AuthService {
         username: user.username,
         role: user.role,
         firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        category: user.category
+        lastName: user.lastName
       }
-    };
+    }
   }
 
   async findAllJudges(): Promise<User[]> {
     return this.userModel.find({ role: UserRole.JUDGE })
-      .select('username firstName lastName email') // Incluye email
+      .select('username firstName lastName email')
       .exec();
   }
 
-  // --- NUEVOS MÉTODOS PARA EL CRUD DE USUARIOS ---
-
   async findAllUsers(): Promise<User[]> {
-    // Excluir la contraseña al obtener todos los usuarios
     return this.userModel.find().select('-password').exec();
   }
 
@@ -135,21 +124,27 @@ export class AuthService {
       throw new NotFoundException(`Usuario con ID "${id}" no encontrado.`);
     }
 
-    // Si se intenta cambiar el username a uno ya existente por otro usuario
     if (updateUserDto.username && updateUserDto.username !== user.username) {
         const existingUser = await this.userModel.findOne({ username: updateUserDto.username });
-        if (existingUser && existingUser._id.toString() !== id) {
+        // Asegurarse de que el ID del usuario existente no sea el mismo que el que estamos actualizando
+        if (existingUser && (existingUser._id as Types.ObjectId).toString() !== id) { // <-- Corrección aquí
             throw new ConflictException('El nuevo nombre de usuario ya está en uso.');
         }
     }
 
-    // Si se proporciona una nueva contraseña, hashearla. El pre-hook 'save' de Mongoose se encargará de esto si asignamos a `user.password`.
     if (updateUserDto.password) {
-      user.password = updateUserDto.password; // El pre-hook lo hasheará
+      user.password = updateUserDto.password;
     }
 
     // Actualizar campos del usuario
-    Object.assign(user, updateUserDto);
+    // Object.assign(user, updateUserDto) podría sobrescribir campos a `undefined` si no están en DTO.
+    // Es mejor actualizar solo los campos presentes en updateUserDto
+    for (const key in updateUserDto) {
+        if (updateUserDto.hasOwnProperty(key) && updateUserDto[key] !== undefined) {
+            // @ts-ignore: Acceso dinámico de propiedades
+            user[key] = updateUserDto[key];
+        }
+    }
 
     // Actualizar la entidad relacionada (Judge/Competitor) si el rol lo requiere
     if (user.role === UserRole.JUDGE && user.judgeRef) {
@@ -167,10 +162,9 @@ export class AuthService {
       }).exec();
     }
 
-    await user.save(); // Guarda el usuario (y activa el pre-hook para la contraseña)
-    return user.toObject({ getters: true, virtuals: false }); // Devuelve el objeto limpio sin la contraseña
+    await user.save();
+    return user.toObject({ getters: true, virtuals: false });
   }
-
 
   async deleteUser(id: string): Promise<{ message: string }> {
     const user = await this.userModel.findById(id).exec();
@@ -178,7 +172,6 @@ export class AuthService {
       throw new NotFoundException(`Usuario con ID "${id}" no encontrado.`);
     }
 
-    // Eliminar la entidad relacionada si existe
     if (user.role === UserRole.JUDGE && user.judgeRef) {
       await this.judgeModel.findByIdAndDelete(user.judgeRef).exec();
     } else if (user.role === UserRole.COMPETITOR && user.competitorRef) {
@@ -200,7 +193,6 @@ export class AuthService {
       throw new UnauthorizedException('La contraseña actual es incorrecta.');
     }
 
-    // El pre-hook de Mongoose se encargará de hashear la nueva contraseña
     user.password = newPassword;
     await user.save();
 
