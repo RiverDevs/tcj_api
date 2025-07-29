@@ -1,0 +1,13 @@
+# docker-compose.prod.yml (para producción)
+version: '3.8'
+services:
+  app:
+    build: . # Esto construirá la imagen de tu app NestJS
+    ports:
+      - "3000:3000" # Mapea el puerto del contenedor al puerto del host
+    environment:
+      # Estas variables SE CARGARÁN DESDE EL ARCHIVO .env QUE CREES EN EL SERVIDOR
+      MONGO_URI: ${MONGO_URI}
+      JWT_SECRET: ${JWT_SECRET}
+      # Añade aquí cualquier otra variable de entorno que necesite tu aplicación en producción
+    restart: unless-stopped # Recomendado para que el contenedor se reinicie si falla

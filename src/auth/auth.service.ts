@@ -75,7 +75,7 @@ export class AuthService {
 
   async login(loginDto: LoginDto): Promise<{ accessToken: string; user: any }> {
     const username = loginDto.username.toLowerCase().trim();
-    const user = await this.userModel.findOne({ username }).exec();
+    const user = await this.userModel.findOne({ username }).select('+password').exec();
 
     if (!user || !(await user.comparePassword(loginDto.password))) {
       throw new UnauthorizedException('Credenciales inválidas');
