@@ -4,6 +4,7 @@ import { SubCategoryEnum } from '../common/enums/subcategory.enum';
 import { RondaEnum } from '../common/enums/ronda.enum';
 import { GrupoEnum } from '../common/enums/grupo.enum';
 import { CantidadEnum } from 'src/common/enums/cantidad.enum';
+import { ParejaEquiposEnum } from 'src/common/enums/parejaequipos.enum';
 
 @Controller('enums')
 export class EnumsController {
@@ -30,5 +31,10 @@ export class EnumsController {
   @Get('cantidad')
   getCantidad() {
     return Object.values(CantidadEnum);
+  }
+
+  @Get('parejadeequipos') // Nuevo endpoint para los equipos
+  getParejaDeEquipos() {
+    return Object.values(ParejaEquiposEnum);
   }
 }
