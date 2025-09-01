@@ -7,6 +7,7 @@ export class CreateFinalPhaseResultDto {
 
   @IsNotEmpty()
   @IsString()
+  @IsIn(['Fase 1', 'Fase 2', 'Fase 3']) // Validación para aceptar solo estos valores
   round: string;
 
   @IsNotEmpty()

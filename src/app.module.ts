@@ -19,6 +19,7 @@ import { DataEvaluationModule } from './data.evaluation/data.evaluation.module';
 import { RoundResultsModule } from './round-results/round-results.module';
 import { TorneoGrupalModule } from './torneo-grupal/torneo-grupal.module';
 import { FinalPhaseResultsModule } from './FinalPhaseResults/final-phase-results.module';
+import { UbuntuEvaluationModule } from './UbuntuEvaluation/ubuntu.evaluation.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { FinalPhaseResultsModule } from './FinalPhaseResults/final-phase-results
     RoundResultsModule,
     TorneoGrupalModule,
     FinalPhaseResultsModule,
+    UbuntuEvaluationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
