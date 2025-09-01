@@ -17,6 +17,8 @@ import { EnumsModule } from './enums/enums.module';
 import { EvaluationsModule } from './evaluations/evaluations.module';
 import { DataEvaluationModule } from './data.evaluation/data.evaluation.module';
 import { RoundResultsModule } from './round-results/round-results.module';
+import { TorneoGrupalModule } from './torneo-grupal/torneo-grupal.module';
+import { FinalPhaseResultsModule } from './FinalPhaseResults/final-phase-results.module';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { RoundResultsModule } from './round-results/round-results.module';
     EvaluationsModule,
     DataEvaluationModule,
     RoundResultsModule,
+    TorneoGrupalModule,
+    FinalPhaseResultsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
