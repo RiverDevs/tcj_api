@@ -15,7 +15,7 @@ export class ClassificationsService {
     
     async findAll(query: any): Promise<Classification[]> {
         // Construir el objeto de filtro dinámicamente
-        const filter = {};
+        const filter: any = {};
         if (query.torneo) {
             filter['torneo'] = query.torneo;
         }
@@ -28,9 +28,16 @@ export class ClassificationsService {
         if (query.fase) {
             filter['fase'] = query.fase;
         }
+        
+        // Manejar el filtro de equipos de forma dinámica
         if (query.equipos) {
-            filter['equipos'] = query.equipos;
+            const teams = query.equipos.split('-').map(t => t.trim());
+            filter['$or'] = [
+                { equipoGanador: { $in: teams } },
+                { equipoPerdedor: { $in: teams } }
+            ];
         }
+
         if (query.equipoJueces) {
             filter['equipoJueces'] = { $in: query.equipoJueces.split(',') };
         }
