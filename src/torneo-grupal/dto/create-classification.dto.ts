@@ -1,31 +1,50 @@
-// src/torneo-grupal/dto/create-classification.dto.ts
-import { IsString, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
+// DTO para el sub-documento del log de clasificación
+export class ClassificationLogDto {
+    @IsNotEmpty()
+    @IsString()
+    team: string;
+
+    @IsNotEmpty()
+    @IsNumber()
+    points: number;
+
+    @IsNotEmpty()
+    @IsString()
+    reason: string;
+}
+
+// DTO principal para la creación de una clasificación
 export class CreateClassificationDto {
+    @IsNotEmpty()
     @IsString()
     readonly torneo: string;
 
+    @IsNotEmpty()
     @IsString()
     readonly equipoJueces: string;
 
+    @IsNotEmpty()
     @IsString()
     readonly categoria: string;
 
+    @IsNotEmpty()
     @IsString()
     readonly subcategoria: string;
 
+    @IsNotEmpty()
     @IsString()
     readonly fase: string;
 
+    @IsNotEmpty()
     @IsString()
-    readonly equipoGanador: string;
+    readonly equipo: string;
 
-    @IsNumber()
-    readonly puntajeGanador: number;
-
-    @IsString()
-    readonly equipoPerdedor: string;
-
-    @IsNumber()
-    readonly puntajePerdedor: number;
+    @IsNotEmpty()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ClassificationLogDto)
+    readonly calificationLog: ClassificationLogDto[];
 }
