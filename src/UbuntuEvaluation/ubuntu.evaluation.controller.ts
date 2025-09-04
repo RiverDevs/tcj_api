@@ -17,6 +17,25 @@ export class UbuntuEvaluationController {
       throw new InternalServerErrorException('No se pudo crear la evaluación.');
     }
   }
+  @Get('group-report')
+  async getGroupReport(
+    @Query('tournamentId') tournamentId: string,
+    @Query('category') category: string,
+    @Query('subCategory') subCategory: string,
+    @Query('pairId') pairId: string,
+    @Query('roundNumber') roundNumber: string,
+    @Query('judgeIds') judgeIds: string,
+  ) {
+    if (!tournamentId || !category || !subCategory || !pairId || !roundNumber || !judgeIds) {
+      throw new InternalServerErrorException('Todos los parámetros son requeridos.');
+    }
+    const judgeIdsArray = judgeIds.split(',');
+    const roundNumberInt = parseInt(roundNumber, 10);
+    if (isNaN(roundNumberInt)) {
+      throw new InternalServerErrorException('El número de ronda debe ser un entero.');
+    }
+    return this.ubuntuEvaluationService.getGroupReport(tournamentId, category, subCategory, pairId, roundNumberInt, judgeIdsArray);
+  }
 
   @Get('final-report')
   async getFinalReport(

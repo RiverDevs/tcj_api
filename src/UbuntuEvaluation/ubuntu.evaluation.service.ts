@@ -108,4 +108,106 @@ export class UbuntuEvaluationService {
   async findAll(): Promise<UbuntuEvaluation[]> {
     return this.ubuntuEvaluationModel.find().exec();
   }
+
+
+  async getGroupReport(
+    tournamentId: string,
+    category: string,
+    subCategory: string,
+    pairId: string,
+    roundNumber: number,
+    judgeIds: string[],
+  ): Promise<any> {
+    const matchStage: any = {
+      tournamentId,
+      category,
+      subCategory,
+      pairId,
+      roundNumber,
+      judgeId: { $in: judgeIds },
+    };
+
+    try {
+      const aggregatedData = await this.ubuntuEvaluationModel.aggregate([
+        {
+          $match: matchStage,
+        },
+        {
+          $unwind: '$teamScores',
+        },
+        {
+          $unwind: {
+            path: '$penalties',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $group: {
+            _id: {
+              judgeId: '$judgeId',
+              judgeUsername: '$judgeUsername',
+            },
+            totalScore: {
+              $sum: '$teamScores.score',
+            },
+            totalPenalties: {
+              $sum: {
+                $cond: {
+                  if: { $eq: ['$penalties.teamName', '$teamScores.teamName'] },
+                  then: '$penalties.value',
+                  else: 0,
+                },
+              },
+            },
+            teamScores: {
+              $push: {
+                teamName: '$teamScores.teamName',
+                score: '$teamScores.score',
+                penalty: {
+                  $cond: {
+                    if: { $eq: ['$penalties.teamName', '$teamScores.teamName'] },
+                    then: '$penalties.value',
+                    else: 0,
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          $addFields: {
+            teamScoresMap: {
+              $arrayToObject: {
+                $map: {
+                  input: '$teamScores',
+                  as: 'teamScore',
+                  in: [
+                    '$$teamScore.teamName',
+                    { $subtract: ['$$teamScore.score', '$$teamScore.penalty'] },
+                  ],
+                },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            judgeId: '$_id.judgeId',
+            judgeUsername: '$_id.judgeUsername',
+            teamScores: '$teamScoresMap',
+          },
+        },
+        {
+          $sort: { judgeUsername: 1 },
+        },
+      ]).exec();
+      
+      return aggregatedData;
+    } catch (error) {
+      console.error('Error al generar el reporte grupal para el torneo:', error);
+      throw new InternalServerErrorException('No se pudieron obtener los resultados del reporte grupal.');
+    }
+  }
+
 }
