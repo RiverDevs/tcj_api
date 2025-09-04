@@ -1,5 +1,4 @@
-// src/torneo-grupal/controllers/penalties.controller.ts
-import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Get, Query, Put, Param } from '@nestjs/common';
 import { PenaltiesService } from '../services/penalties.service';
 import { CreatePenaltyDto } from '../dto/create-penalty.dto';
 
@@ -18,6 +17,37 @@ export class PenaltiesController {
         } catch (error) {
             throw new HttpException(
                 'Error al guardar las penalizaciones',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+    
+
+    @Get()
+    async findAll(@Query() query: any) {
+        try {
+            const penalties = await this.penaltiesService.findAll(query);
+            return penalties;
+        } catch (error) {
+            throw new HttpException(
+                'Error al obtener las penalizaciones',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+
+    @Put(':id')
+    async update(@Param('id') id: string, @Body() updateData: any) {
+        try {
+            const result = await this.penaltiesService.update(id, updateData);
+            return {
+                message: 'Penalización actualizada exitosamente',
+                data: result,
+            };
+        } catch (error) {
+            throw new HttpException(
+                'Error al actualizar la penalización',
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }

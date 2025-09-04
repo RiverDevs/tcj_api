@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreatePenaltyDto } from '../dto/create-penalty.dto';
@@ -40,5 +40,13 @@ export class PenaltiesService {
         }
         
         return this.penaltyModel.find(filter).exec();
+    }
+
+    async update(id: string, updateData: any): Promise<Penalty> {
+        const updatedPenalty = await this.penaltyModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
+        if (!updatedPenalty) {
+            throw new NotFoundException('Penalización no encontrada.');
+        }
+        return updatedPenalty;
     }
 }
