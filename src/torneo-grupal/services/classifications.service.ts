@@ -30,10 +30,7 @@ export class ClassificationsService {
         }
         
         // Manejar el filtro de equipos de forma dinámica
-        if (query.equipo) {
-            const teams = Array.isArray(query.equipo) ? query.equipo : [query.equipo];
-            filter['equipo'] = { $in: teams };
-        } else if (query.equipos) {
+        if (query.equipos) {
             const teams = query.equipos.split('-').map(t => t.trim());
             filter['equipo'] = { $in: teams };
         }
@@ -48,7 +45,7 @@ export class ClassificationsService {
     async update(id: string, updateData: any): Promise<Classification> {
         const updatedClassification = await this.classificationModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
         if (!updatedClassification) {
-            throw new Error('Clasificación no encontrada.');
+            throw new Error('Calificación no encontrada.');
         }
         return updatedClassification;
     }

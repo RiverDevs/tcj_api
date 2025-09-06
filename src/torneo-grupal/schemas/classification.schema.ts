@@ -1,10 +1,10 @@
+// src/torneo-grupal/schemas/classification.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 export type ClassificationDocument = Classification & Document;
 
-// Sub-esquema para los registros de clasificación, similar a PenaltyLog
-@Schema({ _id: false })
+@Schema({ _id: false }) // _id: false evita que se genere un _id para el subdocumento
 export class ClassificationLog {
     @Prop({ required: true })
     team: string;

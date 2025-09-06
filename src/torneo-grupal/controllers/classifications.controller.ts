@@ -12,12 +12,12 @@ export class ClassificationsController {
         try {
             const result = await this.classificationsService.create(createClassificationDto);
             return {
-                message: 'Clasificación guardada exitosamente',
+                message: 'Calificación guardada exitosamente',
                 data: result,
             };
         } catch (error) {
             throw new HttpException(
-                'Error al guardar la clasificación',
+                'Error al guardar la calificación',
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -30,7 +30,7 @@ export class ClassificationsController {
             return classifications;
         } catch (error) {
             throw new HttpException(
-                'Error al obtener las clasificaciones',
+                'Error al obtener las calificaciones',
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -41,12 +41,12 @@ export class ClassificationsController {
         try {
             const result = await this.classificationsService.update(id, updateData);
             return {
-                message: 'Clasificación actualizada exitosamente',
+                message: 'Calificación actualizada exitosamente',
                 data: result,
             };
         } catch (error) {
             throw new HttpException(
-                'Error al actualizar la clasificación',
+                'Error al actualizar la calificación',
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
