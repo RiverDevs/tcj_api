@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,6 +19,17 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
     transform: true,
   }));
+
+  // --- CONFIGURACIÓN DE SWAGGER ---
+  const config = new DocumentBuilder()
+    .setTitle('API de resultados de la fase final')
+    .setDescription('Documentación de la API para gestionar los resultados de la fase final.')
+    .setVersion('1.0')
+    .addTag('final-phase-results')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+  // --- FIN DE LA CONFIGURACIÓN DE SWAGGER ---
 
   // === CAMBIO CRÍTICO AQUÍ ===
   const port = process.env.PORT || 3000; // Render usará process.env.PORT (que es 10000)

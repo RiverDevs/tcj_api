@@ -11,7 +11,7 @@ export class FinalPhaseResultsController {
     return this.finalPhaseResultsService.createOrUpdate(createFinalPhaseResultDto);
   }
 
-  // Endpoint para obtener puntajes de una fase específica (opcional) o la suma de todas las fases que coincidan con la consulta.
+  // Endpoint para obtener puntajes de una fase específica.
   @Get(':tournament/scores')
   async getSpecificPhaseScores(
     @Param('tournament') tournament: string,
@@ -21,10 +21,10 @@ export class FinalPhaseResultsController {
     @Query('subCategory') subCategory?: string,
     @Query('round') round?: string,
   ) {
-    return this.finalPhaseResultsService.getFinalResults(tournament, team1, team2, category, subCategory, round);
+    return this.finalPhaseResultsService.getSpecificPhaseScores(tournament, team1, team2, category, subCategory, round);
   }
 
-  // Nuevo endpoint dedicado para obtener la suma de los puntajes de todas las fases (Fase 1, Fase 2, etc.)
+  // Nuevo endpoint dedicado para obtener la suma de los puntajes de todas las fases.
   @Get(':tournament/final-combined-scores')
   async getCombinedFinalScores(
     @Param('tournament') tournament: string,

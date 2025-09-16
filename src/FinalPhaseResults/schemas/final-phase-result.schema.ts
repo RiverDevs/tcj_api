@@ -9,19 +9,19 @@ export class FinalPhaseResult {
   tournament: string;
 
   @Prop({ required: true })
+  category: string;
+
+  @Prop({ required: true })
+  subCategory: string;
+
+  @Prop({ required: true })
   round: string;
 
   @Prop({ required: true })
-  category: string; 
+  team: string;
 
   @Prop({ required: true })
-  subCategory: string; 
-
-  @Prop({ required: true })
-  teams: string; 
-
-  @Prop({ type: Object, required: true })
-  results: Record<string, number>;
+  score: number;
 }
 
 export const FinalPhaseResultSchema = SchemaFactory.createForClass(FinalPhaseResult);

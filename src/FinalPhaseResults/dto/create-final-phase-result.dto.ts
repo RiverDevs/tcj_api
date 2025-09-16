@@ -1,28 +1,27 @@
-import { IsString, IsNotEmpty, IsObject, IsIn } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 export class CreateFinalPhaseResultDto {
   @IsNotEmpty()
   @IsString()
-  tournament: string;
+  readonly tournament: string;
 
   @IsNotEmpty()
   @IsString()
-  @IsIn(['Fase 1 Jogo de Dentro', 'Fase 2 Jogo de Fora', 'Fase 3 Jogo Ligero'])
-  round: string;
+  readonly category: string;
 
   @IsNotEmpty()
   @IsString()
-  category: string;
+  readonly subCategory: string;
 
   @IsNotEmpty()
   @IsString()
-  subCategory: string; 
+  readonly round: string;
 
   @IsNotEmpty()
   @IsString()
-  teams: string; 
+  readonly team: string;
 
   @IsNotEmpty()
-  @IsObject()
-  results: Record<string, number>;
+  @IsNumber()
+  readonly score: number;
 }
