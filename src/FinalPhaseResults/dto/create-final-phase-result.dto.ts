@@ -7,7 +7,7 @@ export class CreateFinalPhaseResultDto {
 
   @IsNotEmpty()
   @IsString()
-  @IsIn(['Fase 1 Jodo de Dentro', 'Fase 2 Jogo de Fora', 'Fase 3 Jogo Ligero'])
+  @IsIn(['Fase 1 Jogo de Dentro', 'Fase 2 Jogo de Fora', 'Fase 3 Jogo Ligero'])
   round: string;
 
   @IsNotEmpty()
