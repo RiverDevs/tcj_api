@@ -11,6 +11,15 @@ export class FinalPhaseResult {
   @Prop({ required: true })
   round: string;
 
+  @Prop({ required: true })
+  category: string; 
+
+  @Prop({ required: true })
+  subCategory: string; 
+
+  @Prop({ required: true })
+  teams: string; 
+
   @Prop({ type: Object, required: true })
   results: Record<string, number>;
 }

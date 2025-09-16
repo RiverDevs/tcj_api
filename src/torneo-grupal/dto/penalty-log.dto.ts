@@ -1,5 +1,5 @@
 // src/torneo-grupal/dto/penalty-log.dto.ts
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNumber } from 'class-validator';
 
 export class PenaltyLogDto {
     @IsString()

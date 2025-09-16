@@ -11,10 +11,10 @@ export class FinalPhaseResultsService {
   ) {}
 
   async createOrUpdate(createFinalPhaseResultDto: CreateFinalPhaseResultDto): Promise<FinalPhaseResult> {
-    const { tournament, round, results } = createFinalPhaseResultDto;
+    const { tournament, round, category, subCategory, teams, results } = createFinalPhaseResultDto;
 
     const existingResult = await this.finalPhaseResultModel.findOneAndUpdate(
-      { tournament, round },
+      { tournament, round, category, subCategory, teams },
       { $set: { results } },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     ).exec();
@@ -34,11 +34,13 @@ export class FinalPhaseResultsService {
       throw new BadRequestException('Debes proporcionar dos equipos para obtener los resultados finales.');
     }
 
-    // Construir la consulta de forma dinámica
+    // Construir la consulta de forma dinámica para buscar por el string de equipos
+    const teamsString1 = `${team1}-${team2}`;
+    const teamsString2 = `${team2}-${team1}`;
+
     const queryConditions: any = {
       tournament,
-      [`results.${team1}`]: { $exists: true },
-      [`results.${team2}`]: { $exists: true },
+      $or: [{ teams: teamsString1 }, { teams: teamsString2 }],
     };
 
     if (category) {
@@ -47,11 +49,7 @@ export class FinalPhaseResultsService {
     if (subCategory) {
       queryConditions.subCategory = subCategory;
     }
-    if (judgeTeam) {
-      queryConditions.judgeTeam = judgeTeam;
-    }
 
-    // Buscar los resultados filtrados
     const allPhaseResults = await this.finalPhaseResultModel.find(queryConditions).exec();
 
     if (allPhaseResults.length === 0) {
@@ -60,7 +58,6 @@ export class FinalPhaseResultsService {
 
     const finalScores: Record<string, number> = {};
 
-    // Sumar los puntajes de solo los dos equipos proporcionados
     allPhaseResults.forEach(phaseResult => {
       if (phaseResult.results[team1] !== undefined) {
         if (!finalScores[team1]) finalScores[team1] = 0;
@@ -78,18 +75,19 @@ export class FinalPhaseResultsService {
     
     // Determinar el equipo ganador
     if (teamNames.length > 0) {
+      let isTie = false;
       teamNames.forEach(team => {
-          if (finalScores[team] > highestScore) {
-              highestScore = finalScores[team];
-              winner = team;
-          }
+        if (finalScores[team] > highestScore) {
+          highestScore = finalScores[team];
+          winner = team;
+          isTie = false;
+        } else if (finalScores[team] === highestScore) {
+          isTie = true;
+        }
       });
-    }
-
-    // Manejar el caso de un empate
-    const winners = teamNames.filter(team => finalScores[team] === highestScore);
-    if (winners.length > 1) {
-        winner = `Empate entre ${winners.join(' y ')}`;
+      if (isTie) {
+        winner = 'Empate';
+      }
     }
 
     return {
